@@ -27,7 +27,7 @@ class Alfabeto {
     Alfabeto();
 
     void Insert(const Simbolo& simbolo);
-
+    std::set<Simbolo> GetAlfabeto();
     bool Contains(const Simbolo& simbolo) const;
 
     // sobrecargas utiles

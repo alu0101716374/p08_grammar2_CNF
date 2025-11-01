@@ -6,15 +6,17 @@ c
 S
 X
 Y
-11
+13
 S aXbX
 S abX
 S aXb
 S ab
 X aY
 X bY
-X b
+X a
+X &
 Y aY
 Y bY
+Y a
 Y b
 Y c

@@ -37,3 +37,8 @@ void ErrorFour() {
   std::cerr << "Error 4: The symbol '&' cannot be in the alphabet as it is saved to represent the empty string\nPROGRAM TERMINATED\n";
   std::exit(1);
 }
+
+void NotSimplified() {
+  std::cout << "#####################################\n";
+  std::cout << "No se puede pasar a FNC, elimina producciones VACIAS y UNITARIAS\n";
+}

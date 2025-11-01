@@ -17,9 +17,7 @@
 #define TOOLS_H
 
 void PrintUsage();
-
 void Help();
-
-
 void ErrorFour();
+void NotSimplified();
 #endif

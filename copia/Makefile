@@ -21,3 +21,4 @@ all:
 clean: $(ejecutable)
 	@echo "Ejecutable borrado del directorio"
 	rm -f $(ejecutable)
+	rm -rf *.txt *.gra

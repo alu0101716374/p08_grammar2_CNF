@@ -13,22 +13,30 @@
 // Historial de revisiones
 // 29/10/2025 - Creación (primera versión) del código
 
-#include "tools.h"
-#include "gramatica.h"
-
 #include <fstream>
 #include <string>
 
-int main(int argc, char* argv []) {
+#include "gramatica.h"
+#include "tools.h"
+
+int main(int argc, char* argv[]) {
   if (argc == 1) {
     PrintUsage();
   } else if (std::string(argv[1]) == "--help") {
     Help();
-  } else if (argc == 3) {
-    const std::string input_file_name{argv[1]}, output_file_name{argv[2]};
+  } else {
+    const std::string input_file_name{argv[1]};
+    // por defecto en out.gra
+    std::string output_file_name{"out.gra"};
+    if (argc == 3) {
+      output_file_name = argv[2];
+    }
     Gramatica grammar{input_file_name};
     std::ofstream out_file;
     out_file.open(output_file_name);
+    // Comprobar que esta simplificada
+    if (!grammar.IsSimplified()) NotSimplified();
+    grammar.ConvertToChomsky();
     out_file << grammar;
   }
 }

@@ -41,6 +41,10 @@ bool Alfabeto::Contains(const Simbolo& simbolo) const {
   return (alfabeto_.find(simbolo) != alfabeto_.end());
 }
 
+std::set<Simbolo> Alfabeto::GetAlfabeto() {
+  return alfabeto_;
+}
+
 /**
  * @brief default constructor, makes an empty alphabet
  *

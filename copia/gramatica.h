@@ -16,6 +16,7 @@
 #ifndef GRAMMAR_H
 #define GRAMMAR_H
 
+#include "simbolo.h"
 #include "alfabeto.h"
 
 #include <map>
@@ -25,6 +26,11 @@ class Gramatica {
   public:
     // constructor a partir de fichero
     Gramatica(const std::string& input_file_name);
+
+    // comporbacion de si esta simplificada
+    bool IsSimplified() const;
+
+    void ConvertToChomsky();
 
     // sobrecargas utiles
     friend std::ostream& operator<<(std::ostream& out_stream, const Gramatica& gramatica); 
@@ -36,6 +42,12 @@ class Gramatica {
     std::vector<Simbolo> no_terminales_;
     std::multimap<Simbolo, std::string> producciones_;
     int producciones_size_{0};
+    std::vector<Simbolo> new_no_terminales_;
+
+    Simbolo FindProduction(const std::string& input_production, std::vector<Simbolo> list);
+    Simbolo NewNonTerminal(const std::string& input_production);
+
+    std::string UpdateProduction(const std::string& production, const Simbolo&,  const Simbolo& replacement);
 };
 
 #endif
