@@ -68,10 +68,11 @@ std::ostream& operator<<(std::ostream& out_stream, const Gramatica& gramatica) {
   return out_stream;
 }
 
-// TODO:: make sure start production ca accept empty string production
 bool Gramatica::IsSimplified() const {
+  Simbolo arranque{no_terminales_[0]};
   // Iterar por todas las producciones
   for (auto [no_terminal, produccion] : producciones_) {
+    if (no_terminal == arranque) continue;
     // comprobar si hay produccion a la cadena vacía
     if (produccion == "&") {
       std::cout << "#####################################\n";
@@ -98,15 +99,14 @@ bool Gramatica::IsSimplified() const {
 void Gramatica::ConvertToChomsky() {
   // Parte 1 del algoritmo de FNC
   for (auto iterator{producciones_.begin()}; iterator != producciones_.end(); iterator++) {
-    Simbolo no_terminal{iterator->first};
     std::string& production{iterator->second};
     if (production.size() >= 2) {
       // COmprbar que no hay no termianles
-      for (int i{0}; i < production.size(); i++) {
+      for (int i{0}; i < static_cast<int>(production.size()); i++) {
         if (alfabeto_.Contains(production[i])) {
           // Es un carácter no terminal. cambiarlo
           std::string temp_production{production[i]};
-          Simbolo replacement = FindProduction(temp_production, new_no_terminales_);
+          Simbolo replacement = FindProduction(temp_production);
           if (replacement == ' ')  {
             replacement = NewNonTerminal(temp_production);
           }
@@ -114,15 +114,34 @@ void Gramatica::ConvertToChomsky() {
         }
       }
     }
+  }
 
+  // Parte 2 del algorimo
+  for (auto iterator{producciones_.begin()}; iterator != producciones_.end(); iterator++) {
+    std::string& production{iterator->second};
+    int production_length{static_cast<int>(production.size())};
+    if (production_length >= 3) {
+      while (production_length > 2) {
+        std::string old_section = production.substr(production_length - 2);
+        Simbolo replacement = FindProduction(old_section);
+        if (replacement == ' ') {
+          replacement = NewNonTerminal(old_section);
+        }
+        // Util para depuración
+        // std::cout << "Convirtiendo " << old_section << " de " << production << " con " << replacement << "    #######\n"; 
+        production.erase(production_length - 2);
+        production += replacement;
+        production_length--;
+      }
+    }
   }
 }
 
 
-Simbolo Gramatica::FindProduction(const std::string& input_production, std::vector<Simbolo> list) {
+Simbolo Gramatica::FindProduction(const std::string& input_production) {
   for (auto [no_terminal, production] : producciones_) {
     if (production == input_production) {
-      for (Simbolo temp : list) {
+      for (Simbolo temp : new_no_terminales_) {
                 if (temp == no_terminal) return no_terminal; 
             }
     }
@@ -143,29 +162,17 @@ Simbolo Gramatica::NewNonTerminal(const std::string& input_production) {
         }
         if (exists) ++new_terminal;
     }
+    // util para depuracion
+    // std::cout << new_terminal << " añadido a new_no_terminals\n";
+    // std::cout << "NNT añadiendo produccion " << new_terminal << " " << input_production << "\n";
 
+    // Actualiza la gramática
     new_no_terminales_.push_back(new_terminal);
     no_terminales_.push_back(new_terminal);
     producciones_.insert({new_terminal, input_production});
-    std::cout << new_terminal << " añadido a new_no_terminals\n";
-    std::cout << "NNT añadiendo produccion " << new_terminal << " " << input_production << "\n";
     non_terminal_amount_++;
     producciones_size_++;
 
     return new_terminal;
 }
 
-
-std::string Gramatica::UpdateProduction(const std::string& production,
-                                         const Simbolo& symbol,
-                                         const Simbolo& replacement) {
-  std::string new_production{""};
-  for (Simbolo simbolo : production) {
-    if (simbolo == symbol) {
-      new_production += replacement;
-    } else {
-      new_production += simbolo;
-    }
-  }
-  return new_production;
-}

@@ -2,19 +2,26 @@
 a
 b
 c
-5
+8
 S
 X
 Y
 A
 B
-13
+C
+D
+E
+17
 A a
 B b
-S AXBX
-S ABX
-S AXB
+C BX
+D XC
+E XB
+S AD
+S AC
+S AE
 S AB
+S &
 X AY
 X BY
 X b

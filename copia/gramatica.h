@@ -44,10 +44,9 @@ class Gramatica {
     int producciones_size_{0};
     std::vector<Simbolo> new_no_terminales_;
 
-    Simbolo FindProduction(const std::string& input_production, std::vector<Simbolo> list);
+    Simbolo FindProduction(const std::string& input_production);
     Simbolo NewNonTerminal(const std::string& input_production);
 
-    std::string UpdateProduction(const std::string& production, const Simbolo&,  const Simbolo& replacement);
 };
 
 #endif
