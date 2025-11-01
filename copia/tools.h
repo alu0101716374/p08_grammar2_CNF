@@ -20,4 +20,5 @@ void PrintUsage();
 void Help();
 void ErrorFour();
 void NotSimplified();
+void ClickAny();
 #endif

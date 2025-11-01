@@ -14,10 +14,21 @@
 // 29/10/2025 - Creación (primera versión) del código
 
 #include "gramatica.h"
+#include "tools.h"
 
 #include <fstream>
 #include <set>
 
+// PARA ACTIVAR/DESACTIVAR MODO INTERACTIVO (ver la traza paso por paso)
+const bool INTERACTIVE{false};
+
+
+/**
+ * @brief Constructor a partir de fichero de entrada
+ * 
+ * @param input_file_name nombre del fichero de entrada 
+ * @return void, es el constructor
+ */
 Gramatica::Gramatica(const std::string& input_file_name) {
   std::ifstream input_file;
   input_file.open(input_file_name);
@@ -52,6 +63,13 @@ Gramatica::Gramatica(const std::string& input_file_name) {
   }
 }
 
+/**
+ * @brief Sobrecarga de salida, (mismo formato que se usa para lectura)
+ *
+ * @param out_stream output creada
+ * @param gramatica gramatica a imprimir
+ * @return out_stream, la salida
+ */
 std::ostream& operator<<(std::ostream& out_stream, const Gramatica& gramatica) {
   out_stream << gramatica.alfabeto_size_ << "\n"
              << gramatica.alfabeto_ << gramatica.non_terminal_amount_ << "\n";
@@ -68,13 +86,19 @@ std::ostream& operator<<(std::ostream& out_stream, const Gramatica& gramatica) {
   return out_stream;
 }
 
+/**
+ * @brief Comprueba que no existen producciones vacías o unitarias, imprime error en caso de no estar simplificada
+ *
+ * @return verdadero -> simplificada - falso -> no simplifcada
+ */
 bool Gramatica::IsSimplified() const {
   Simbolo arranque{no_terminales_[0]};
   // Iterar por todas las producciones
   for (auto [no_terminal, produccion] : producciones_) {
-    if (no_terminal == arranque) continue;
-    // comprobar si hay produccion a la cadena vacía
-    if (produccion == "&") {
+     
+    
+    // comprobar si hay produccion a la cadena vacía (solo en caso de que no sea el simboo de arranque)
+    if (produccion == "&" && no_terminal != arranque) {
       std::cout << "#####################################\n";
       std::cout << "Produccion vacia encontrada: " << no_terminal << " "
                 << produccion << "\n\n";
@@ -96,14 +120,31 @@ bool Gramatica::IsSimplified() const {
   return true;
 }
 
+/**
+ * @brief Aplica los dos partes del algoritmo de conversion a FNC, con modo INTERACTIVE puesto, vemos la traza paso por paso en la terminal
+ * 
+ *
+ * @return void / modifica la gramática
+ */
 void Gramatica::ConvertToChomsky() {
   // Parte 1 del algoritmo de FNC
+  int counter{1};
+  if (INTERACTIVE) {
+    std::cout << "--------------------------\nPART 1 OF ALGORITHM\n";
+  }
   for (auto iterator{producciones_.begin()}; iterator != producciones_.end(); iterator++) {
     std::string& production{iterator->second};
+    Simbolo no_terminal{iterator->first};
+    if (INTERACTIVE) {
+      ClickAny();
+      std::cout << "ITERATION: " << counter << "\n"; 
+      std::cout << "Start: " << no_terminal << " " << production << "\n";
+    }
     if (production.size() >= 2) {
       // COmprbar que no hay no termianles
       for (int i{0}; i < static_cast<int>(production.size()); i++) {
         if (alfabeto_.Contains(production[i])) {
+          std::string initial_production{production}; // (para modo interactive)
           // Es un carácter no terminal. cambiarlo
           std::string temp_production{production[i]};
           Simbolo replacement = FindProduction(temp_production);
@@ -111,36 +152,69 @@ void Gramatica::ConvertToChomsky() {
             replacement = NewNonTerminal(temp_production);
           }
           production[i] = replacement;
+          if (INTERACTIVE) {
+            std::cout << "\t - From " << initial_production << " to " << production << "\n";
+          }
         }
       }
     }
+    if (INTERACTIVE) {
+      std::cout << "Finish: " << no_terminal << " " << production << "\n";
+    }
+    counter++;
   }
 
   // Parte 2 del algorimo
+  if (INTERACTIVE) {
+    std::cout << "--------------------------\nPART 2 OF ALGORITHM\n";
+  }
   for (auto iterator{producciones_.begin()}; iterator != producciones_.end(); iterator++) {
     std::string& production{iterator->second};
+    Simbolo no_terminal{iterator->first};
+    if (INTERACTIVE) {
+      ClickAny();
+      std::cout << "ITERATION: " << counter << "\n"; 
+      std::cout << "Start: " << no_terminal << " " << production << "\n";
+    }
     int production_length{static_cast<int>(production.size())};
     if (production_length >= 3) {
       while (production_length > 2) {
+        std::string initial_production{production}; // (para modo INTERACTIVE)
+        // pillar los ultimos 2 simbolos
         std::string old_section = production.substr(production_length - 2);
         Simbolo replacement = FindProduction(old_section);
         if (replacement == ' ') {
           replacement = NewNonTerminal(old_section);
         }
-        // Util para depuración
-        // std::cout << "Convirtiendo " << old_section << " de " << production << " con " << replacement << "    #######\n"; 
-        production.erase(production_length - 2);
+        // borrar ultimos 2 simbolos
+        production.erase(production_length - 2); 
+        // añadir el nuevo simbolo
         production += replacement;
+
         production_length--;
+        if (INTERACTIVE) {
+            std::cout << "\t - From " << initial_production << " to " << production << "\n";
+          }
       }
     }
+    if (INTERACTIVE) {
+      std::cout << "Finish: " << no_terminal << " " << production << "\n";
+    }
+    counter++;
   }
 }
 
-
+/**
+ * @brief comprueba si existe una produccion (nueva, creada durante el algoritmo)
+ *
+ * @param input_production produccion a buscar
+ * @return ' ' en caso de no existir la produccion -  el simbolo NT si existe
+ */
 Simbolo Gramatica::FindProduction(const std::string& input_production) {
+  // Iterar por producciones
   for (auto [no_terminal, production] : producciones_) {
     if (production == input_production) {
+      // comprobar si la produccion es nueva
       for (Simbolo temp : new_no_terminales_) {
                 if (temp == no_terminal) return no_terminal; 
             }
@@ -149,6 +223,12 @@ Simbolo Gramatica::FindProduction(const std::string& input_production) {
   return ' ';
 }
 
+/**
+ * @brief Crea un simbolo NT nuevo, empezando en A, hasta Z (usa el primero que no existe ya)
+ *
+ * @param input_production produccion a crear
+ * @return Return description
+ */
 Simbolo Gramatica::NewNonTerminal(const std::string& input_production) {
    Simbolo new_terminal{'A'};
     bool exists = true; 
@@ -162,10 +242,9 @@ Simbolo Gramatica::NewNonTerminal(const std::string& input_production) {
         }
         if (exists) ++new_terminal;
     }
-    // util para depuracion
-    // std::cout << new_terminal << " añadido a new_no_terminals\n";
-    // std::cout << "NNT añadiendo produccion " << new_terminal << " " << input_production << "\n";
-
+    if (INTERACTIVE) {
+      std::cout << "# Non terminal Added: " << new_terminal << " " << input_production << "\n";
+    }
     // Actualiza la gramática
     new_no_terminales_.push_back(new_terminal);
     no_terminales_.push_back(new_terminal);

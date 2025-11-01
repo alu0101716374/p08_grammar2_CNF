@@ -53,8 +53,12 @@ std::set<Simbolo> Alfabeto::GetAlfabeto() {
 Alfabeto::Alfabeto() {};
 
 /**
- * @brief output stream operator overload, prints the alphabet in the format {<symbol1>, <symbol2>, ...}
- *
+ * @brief output stream operator overload, prints the alphabet in the format  
+ * <symbol1>
+ * <symbol2>
+ * ...
+ * <symbol n>
+ * 
  * @param os outstream that will be returned
  * @param alfabeto alphabet to be printed
  * @return out stream 
